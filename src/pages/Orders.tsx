@@ -33,12 +33,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Filter, Gift, Search, Trash2 } from "lucide-react";
+import { Plus, Filter, Gift, Search, Trash2, Camera } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { BarcodeScanner } from "@/components/scanner/BarcodeScanner";
+import { CameraScanner } from "@/components/scanner/CameraScanner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Product {
   id: string;
@@ -71,6 +71,7 @@ const Orders: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterWinEligible, setFilterWinEligible] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("manual");
 
   // Product selection for new order
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
@@ -519,128 +520,143 @@ const Orders: React.FC = () => {
                 </div>
               </div>
 
-              {/* Barcode Scanner Component */}
-              <BarcodeScanner 
-                onProductScanned={handleScannedCode}
-                enabled={isScannerEnabled}
-              />
+              {/* Product Selection Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="manual">Manual Selection</TabsTrigger>
+                  <TabsTrigger value="scan">
+                    <Camera className="mr-2 h-4 w-4" />
+                    Scan Products
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="manual">
+                  <div className="space-y-2">
+                    <Label>Products</Label>
+                    <div className="flex space-x-2 items-center">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                        <Input
+                          placeholder="Search products..."
+                          className="pl-9"
+                          value={productSearchTerm}
+                          onChange={(e) => setProductSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      <Select onValueChange={handleAddProduct}>
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Add product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableProducts.map((product) => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name} - ${product.price.toFixed(2)}
+                              {product.winEligible && <span className="ml-2">🏆</span>}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              <div className="space-y-2">
-                <Label>Products</Label>
-                <div className="flex space-x-2 items-center">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <Input
-                      placeholder="Search products..."
-                      className="pl-9"
-                      value={productSearchTerm}
-                      onChange={(e) => setProductSearchTerm(e.target.value)}
+                    {/* Product Grid for Quick Selection */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+                      {filteredAvailableProducts.map((product) => (
+                        <div 
+                          key={product.id}
+                          className="border rounded-md p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => handleQuickAddProduct(product)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            {product.imageUrl && (
+                              <img 
+                                src={product.imageUrl} 
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded-md" 
+                              />
+                            )}
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{product.name}</p>
+                              <div className="flex justify-between items-center">
+                                <p className="text-sm text-gray-600">${product.price.toFixed(2)}</p>
+                                {product.winEligible && (
+                                  <Badge className="bg-yellow-500">
+                                    <Gift className="h-3 w-3 mr-1" /> Eligible
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="scan" className="space-y-2">
+                  {/* Camera Scanner Component */}
+                  <div className="border rounded-md p-4">
+                    <CameraScanner 
+                      onCodeDetected={handleScannedCode}
+                      autoClose={false}
                     />
                   </div>
-                  <Select onValueChange={handleAddProduct}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Add product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableProducts.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name} - ${product.price.toFixed(2)}
-                          {product.winEligible && <span className="ml-2">🏆</span>}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                </TabsContent>
+              </Tabs>
 
-                {/* Product Grid for Quick Selection */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
-                  {filteredAvailableProducts.map((product) => (
-                    <div 
-                      key={product.id}
-                      className="border rounded-md p-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                      onClick={() => handleQuickAddProduct(product)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        {product.imageUrl && (
-                          <img 
-                            src={product.imageUrl} 
-                            alt={product.name}
-                            className="w-10 h-10 object-cover rounded-md" 
-                          />
-                        )}
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{product.name}</p>
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm text-gray-600">${product.price.toFixed(2)}</p>
-                            {product.winEligible && (
+              {selectedProducts.length > 0 && (
+                <div className="mt-4 border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Win Eligible</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedProducts.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell>{product.name}</TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={product.quantity}
+                              onChange={(e) =>
+                                handleUpdateProductQuantity(
+                                  product.id,
+                                  parseInt(e.target.value) || 1
+                                )
+                              }
+                              className="w-16"
+                            />
+                          </TableCell>
+                          <TableCell>${product.price.toFixed(2)}</TableCell>
+                          <TableCell>
+                            {product.winEligible ? (
                               <Badge className="bg-yellow-500">
                                 <Gift className="h-3 w-3 mr-1" /> Eligible
                               </Badge>
+                            ) : (
+                              <Badge variant="outline">Not Eligible</Badge>
                             )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedProducts.length > 0 && (
-                  <div className="mt-4 border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead>Quantity</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Win Eligible</TableHead>
-                          <TableHead>Action</TableHead>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveProduct(product.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              Remove
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedProducts.map((product) => (
-                          <TableRow key={product.id}>
-                            <TableCell>{product.name}</TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={product.quantity}
-                                onChange={(e) =>
-                                  handleUpdateProductQuantity(
-                                    product.id,
-                                    parseInt(e.target.value) || 1
-                                  )
-                                }
-                                className="w-16"
-                              />
-                            </TableCell>
-                            <TableCell>${product.price.toFixed(2)}</TableCell>
-                            <TableCell>
-                              {product.winEligible ? (
-                                <Badge className="bg-yellow-500">
-                                  <Gift className="h-3 w-3 mr-1" /> Eligible
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline">Not Eligible</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveProduct(product.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                Remove
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="customerNotes">Notes</Label>

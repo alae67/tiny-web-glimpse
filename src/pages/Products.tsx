@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,10 +52,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Edit, Trash, MoreVertical, Gift } from "lucide-react";
+import { Plus, Search, Edit, Trash, MoreVertical, Gift, Camera } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import ImageUpload from "@/components/products/ImageUpload";
+import { CameraScanner } from "@/components/scanner/CameraScanner";
 
 interface Product {
   id: string;
@@ -69,6 +69,7 @@ interface Product {
   status: "in-stock" | "low-stock" | "out-of-stock";
   createdAt: string;
   winEligible: boolean;
+  barcode?: string; // Add barcode property
 }
 
 const Products: React.FC = () => {
@@ -92,7 +93,11 @@ const Products: React.FC = () => {
     category: "clothing", // Changed default to clothing
     stock: 0,
     winEligible: true,
+    barcode: "", // Add barcode field
   });
+  
+  // Scanner state
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   
   const { toast } = useToast();
   
@@ -222,10 +227,12 @@ const Products: React.FC = () => {
       imageUrl: "",
       category: "clothing",
       stock: 0,
-      winEligible: true
+      winEligible: true,
+      barcode: "" // Reset barcode field
     });
     setIsEditing(false);
     setCurrentProduct(null);
+    setIsScannerOpen(false); // Close the scanner when resetting form
   };
   
   const openAddDialog = () => {
@@ -244,9 +251,24 @@ const Products: React.FC = () => {
       imageUrl: product.imageUrl,
       category: product.category,
       stock: product.stock,
-      winEligible: product.winEligible !== undefined ? product.winEligible : true
+      winEligible: product.winEligible !== undefined ? product.winEligible : true,
+      barcode: product.barcode || "" // Add barcode
     });
     setIsDialogOpen(true);
+  };
+  
+  const handleBarcodeDetected = (code: string) => {
+    setFormData(prev => ({
+      ...prev,
+      barcode: code
+    }));
+    
+    toast({
+      title: "Barcode Scanned",
+      description: `Barcode ${code} has been added to the product.`,
+    });
+    
+    setIsScannerOpen(false); // Close scanner after successful scan
   };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -308,7 +330,8 @@ const Products: React.FC = () => {
               category: formData.category,
               stock: formData.stock,
               status: getProductStatus(formData.stock),
-              winEligible: formData.winEligible
+              winEligible: formData.winEligible,
+              barcode: formData.barcode || product.barcode // Include barcode
             }
           : product
       );
@@ -332,7 +355,8 @@ const Products: React.FC = () => {
         stock: formData.stock,
         status: getProductStatus(formData.stock),
         createdAt: new Date().toISOString().split('T')[0],
-        winEligible: formData.winEligible
+        winEligible: formData.winEligible,
+        barcode: formData.barcode // Include barcode
       };
       
       const updatedProducts = [...products, newProduct];
@@ -393,7 +417,7 @@ const Products: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Product Name</Label>
@@ -462,6 +486,37 @@ const Products: React.FC = () => {
                   />
                 </div>
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="barcode" className="flex items-center justify-between">
+                  <span>Barcode/QR Code</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsScannerOpen(!isScannerOpen)}
+                    className="flex items-center gap-1"
+                  >
+                    <Camera className="h-4 w-4" />
+                    {isScannerOpen ? "Close Scanner" : "Scan Barcode"}
+                  </Button>
+                </Label>
+                <Input
+                  id="barcode"
+                  value={formData.barcode}
+                  onChange={handleInputChange}
+                  placeholder="Enter barcode or scan"
+                />
+              </div>
+              
+              {isScannerOpen && (
+                <div className="space-y-2">
+                  <CameraScanner 
+                    onCodeDetected={handleBarcodeDetected}
+                    autoClose={true}
+                  />
+                </div>
+              )}
               
               <div className="space-y-2">
                 <Label>Product Image</Label>
@@ -573,6 +628,7 @@ const Products: React.FC = () => {
                   <TableHead>Stock</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Win Eligible</TableHead>
+                  <TableHead>Barcode</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -605,6 +661,17 @@ const Products: React.FC = () => {
                           <Badge className="bg-yellow-500"><Gift className="h-3 w-3 mr-1" /> Eligible</Badge>
                         ) : (
                           <Badge variant="outline">Not Eligible</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {product.barcode ? (
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                            {product.barcode.length > 10 
+                              ? product.barcode.substring(0, 10) + '...' 
+                              : product.barcode}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -652,7 +719,7 @@ const Products: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       No products found.
                     </TableCell>
                   </TableRow>

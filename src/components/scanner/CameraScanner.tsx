@@ -1,0 +1,148 @@
+
+import React, { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { Button } from '@/components/ui/button';
+import { Camera, ScanBarcode, X } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+interface CameraScannerProps {
+  onCodeDetected: (code: string) => void;
+  autoClose?: boolean;
+}
+
+export const CameraScanner: React.FC<CameraScannerProps> = ({ 
+  onCodeDetected,
+  autoClose = true
+}) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [lastDetectedCode, setLastDetectedCode] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerContainerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  // Initialize scanner
+  useEffect(() => {
+    // Cleanup function to stop and clear the scanner
+    return () => {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(err => {
+          console.error('Error stopping scanner:', err);
+        });
+      }
+    };
+  }, []);
+
+  const startScanning = async () => {
+    if (!scannerContainerRef.current) return;
+
+    try {
+      // Create scanner instance if not already created
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode('camera-scanner-container');
+      }
+
+      setIsScanning(true);
+      setLastDetectedCode(null);
+
+      // Start scanning with camera
+      await scannerRef.current.start(
+        { facingMode: "environment" }, // Use back camera if available
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0
+        },
+        (decodedText) => {
+          // Success callback - code detected
+          console.log('Code detected:', decodedText);
+          setLastDetectedCode(decodedText);
+          onCodeDetected(decodedText);
+          
+          toast({
+            title: "Barcode Detected",
+            description: `Detected: ${decodedText}`,
+          });
+          
+          // Auto-close if enabled
+          if (autoClose) {
+            stopScanning();
+          }
+        },
+        (errorMessage) => {
+          // Error callback - errors during scanning
+          console.log('Scanning error:', errorMessage);
+        }
+      );
+    } catch (err) {
+      console.error('Error starting scanner:', err);
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera. Please check permissions.",
+        variant: "destructive"
+      });
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanning = async () => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      try {
+        await scannerRef.current.stop();
+        setIsScanning(false);
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center space-x-2">
+          <Camera className="h-5 w-5 text-gray-600" />
+          <div className="font-medium">Camera Barcode Scanner</div>
+        </div>
+        
+        {!isScanning ? (
+          <Button 
+            onClick={startScanning}
+            className="flex items-center space-x-2"
+            variant="secondary"
+          >
+            <ScanBarcode size={18} />
+            <span>Start Camera Scanning</span>
+          </Button>
+        ) : (
+          <Button 
+            onClick={stopScanning} 
+            variant="outline"
+            className="flex items-center space-x-2 border-red-300 text-red-600"
+          >
+            <X size={18} />
+            <span>Stop Scanning</span>
+          </Button>
+        )}
+      </div>
+      
+      {isScanning && (
+        <div 
+          id="camera-scanner-container" 
+          ref={scannerContainerRef}
+          className="relative w-full h-80 bg-gray-100 rounded-md overflow-hidden"
+        />
+      )}
+      
+      {lastDetectedCode && (
+        <Alert>
+          <AlertDescription>
+            <div className="font-medium">Last detected code:</div>
+            <div className="mt-1 font-mono text-sm bg-gray-100 p-2 rounded">
+              {lastDetectedCode}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+};

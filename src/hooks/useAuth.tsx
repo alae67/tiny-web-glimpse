@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -9,6 +8,7 @@ interface User {
   name: string;
   username: string;
   role: 'admin' | 'user'; // Restricting the role to these two specific values
+  isBlocked?: boolean; // Add isBlocked property
 }
 
 interface AuthContextType {
@@ -21,6 +21,8 @@ interface AuthContextType {
   createUser: (name: string, username: string, password: string, role: 'admin' | 'user') => Promise<boolean>;
   changePassword: (userId: string, newPassword: string) => Promise<boolean>;
   deleteUser: (userId: string) => Promise<boolean>;
+  blockUser: (userId: string) => Promise<boolean>;
+  unblockUser: (userId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -131,6 +133,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         return false;
       }
+
+      // Check if user is blocked
+      if (foundUser.isBlocked) {
+        uiToast({
+          title: 'Login Failed',
+          description: 'This account has been blocked. Please contact an administrator.',
+          variant: 'destructive',
+        });
+        return false;
+      }
       
       // Check if password is correct
       if (foundUser.password !== password) {
@@ -148,7 +160,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: foundUser.id,
         name: foundUser.name,
         username: foundUser.username,
-        role: role
+        role: role,
+        isBlocked: foundUser.isBlocked || false
       };
       
       localStorage.setItem('currentUser', JSON.stringify(userData));
@@ -349,6 +362,116 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const blockUser = async (userId: string): Promise<boolean> => {
+    try {
+      // Only admins can block users
+      if (!isAdmin) {
+        uiToast({
+          title: 'Permission Denied',
+          description: 'Only administrators can block users.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Get all users from localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      // Find the user to block
+      const userIndex = users.findIndex((user: any) => user.id === userId);
+      
+      if (userIndex === -1) {
+        uiToast({
+          title: 'User Not Found',
+          description: 'Could not find the user to block.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Prevent blocking admin user
+      if (users[userIndex].username === 'admin') {
+        uiToast({
+          title: 'Cannot Block Admin',
+          description: 'The admin user cannot be blocked.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Set the isBlocked property to true
+      users[userIndex].isBlocked = true;
+      
+      // Save back to localStorage
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      uiToast({
+        title: 'User Blocked',
+        description: `User ${users[userIndex].username} has been blocked successfully.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      uiToast({
+        title: 'Error',
+        description: 'Failed to block user. Please try again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  const unblockUser = async (userId: string): Promise<boolean> => {
+    try {
+      // Only admins can unblock users
+      if (!isAdmin) {
+        uiToast({
+          title: 'Permission Denied',
+          description: 'Only administrators can unblock users.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Get all users from localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      // Find the user to unblock
+      const userIndex = users.findIndex((user: any) => user.id === userId);
+      
+      if (userIndex === -1) {
+        uiToast({
+          title: 'User Not Found',
+          description: 'Could not find the user to unblock.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Set the isBlocked property to false
+      users[userIndex].isBlocked = false;
+      
+      // Save back to localStorage
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      uiToast({
+        title: 'User Unblocked',
+        description: `User ${users[userIndex].username} has been unblocked successfully.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      uiToast({
+        title: 'Error',
+        description: 'Failed to unblock user. Please try again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
   const logout = () => {
     // Clear user info and login status from localStorage
     localStorage.removeItem('currentUser');
@@ -384,7 +507,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       hasPermission, 
       createUser,
       changePassword,
-      deleteUser 
+      deleteUser,
+      blockUser,
+      unblockUser
     }}>
       {children}
     </AuthContext.Provider>

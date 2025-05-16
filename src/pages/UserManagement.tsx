@@ -19,7 +19,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import AddUserDialog from "@/components/users/AddUserDialog";
-import { Lock, UserMinus } from "lucide-react";
+import { Lock, UserMinus, Ban, UserX } from "lucide-react";
 import ChangePasswordDialog from "@/components/users/ChangePasswordDialog";
 import DeleteUserDialog from "@/components/users/DeleteUserDialog";
 
@@ -28,6 +28,7 @@ interface User {
   name: string;
   username: string;
   role: 'admin' | 'user';
+  isBlocked?: boolean;
 }
 
 const UserManagement: React.FC = () => {
@@ -36,7 +37,7 @@ const UserManagement: React.FC = () => {
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
   const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { isAdmin } = useAuth();
+  const { isAdmin, blockUser, unblockUser } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,7 +60,8 @@ const UserManagement: React.FC = () => {
           id: user.id,
           name: user.name,
           username: user.username,
-          role: user.role
+          role: user.role,
+          isBlocked: user.isBlocked || false
         }));
         setUsers(filteredUsers);
       } catch (error) {
@@ -93,7 +95,8 @@ const UserManagement: React.FC = () => {
       id: user.id,
       name: user.name,
       username: user.username,
-      role: user.role
+      role: user.role,
+      isBlocked: user.isBlocked || false
     }));
     setUsers(filteredUsers);
   };
@@ -111,6 +114,20 @@ const UserManagement: React.FC = () => {
   const handleUserUpdated = () => {
     // Reload users after a user is updated
     handleUserAdded();
+  };
+
+  const handleBlockUser = async (user: User) => {
+    const success = await blockUser(user.id);
+    if (success) {
+      handleUserUpdated();
+    }
+  };
+
+  const handleUnblockUser = async (user: User) => {
+    const success = await unblockUser(user.id);
+    if (success) {
+      handleUserUpdated();
+    }
   };
 
   return (
@@ -142,6 +159,7 @@ const UserManagement: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -160,6 +178,17 @@ const UserManagement: React.FC = () => {
                       {user.role}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    {user.isBlocked ? (
+                      <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                        Blocked
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-gray-500 text-sm">{user.id}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
@@ -171,16 +200,41 @@ const UserManagement: React.FC = () => {
                       >
                         <Lock className="h-4 w-4" />
                       </Button>
+                      
                       {user.username !== 'admin' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleOpenDeleteUser(user)}
-                          title="Delete User"
-                        >
-                          <UserMinus className="h-4 w-4" />
-                        </Button>
+                        <>
+                          {user.isBlocked ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                              onClick={() => handleUnblockUser(user)}
+                              title="Unblock User"
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="text-purple-500 hover:text-purple-700 hover:bg-purple-50"
+                              onClick={() => handleBlockUser(user)}
+                              title="Block User"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          )}
+                          
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleOpenDeleteUser(user)}
+                            title="Delete User"
+                          >
+                            <UserMinus className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </TableCell>
@@ -188,7 +242,7 @@ const UserManagement: React.FC = () => {
               ))}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={6} className="text-center py-4 text-gray-500">
                     No users found
                   </TableCell>
                 </TableRow>

@@ -18,12 +18,16 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const [isScanning, setIsScanning] = useState(false);
   const [lastDetectedCode, setLastDetectedCode] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const scannerContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Initialize scanner
   useEffect(() => {
-    // Cleanup function to stop and clear the scanner
+    // Create scanner instance if not already created when component mounts
+    if (!scannerRef.current) {
+      scannerRef.current = new Html5Qrcode('camera-scanner-container');
+    }
+    
+    // Cleanup function to stop and clear the scanner on unmount
     return () => {
       if (scannerRef.current && scannerRef.current.isScanning) {
         scannerRef.current.stop().catch(err => {
@@ -34,10 +38,8 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   }, []);
 
   const startScanning = async () => {
-    if (!scannerContainerRef.current) return;
-
     try {
-      // Create scanner instance if not already created
+      // Ensure the scanner is initialized
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('camera-scanner-container');
       }
@@ -45,6 +47,8 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       setIsScanning(true);
       setLastDetectedCode(null);
 
+      console.log("Starting camera scanner...");
+      
       // Start scanning with camera
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
@@ -108,7 +112,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           <Button 
             onClick={startScanning}
             className="flex items-center space-x-2"
-            variant="secondary"
+            variant="camera"
           >
             <ScanBarcode size={18} />
             <span>Start Camera Scanning</span>
@@ -125,13 +129,10 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         )}
       </div>
       
-      {isScanning && (
-        <div 
-          id="camera-scanner-container" 
-          ref={scannerContainerRef}
-          className="relative w-full h-80 bg-gray-100 rounded-md overflow-hidden"
-        />
-      )}
+      <div 
+        id="camera-scanner-container" 
+        className={`relative w-full h-80 bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+      />
       
       {lastDetectedCode && (
         <Alert>

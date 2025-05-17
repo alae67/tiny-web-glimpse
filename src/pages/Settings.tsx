@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { Languages } from "lucide-react";
+import { Languages, Flag } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserSettings {
   darkMode: boolean;
@@ -18,13 +20,15 @@ interface UserSettings {
 }
 
 const Settings: React.FC = () => {
+  const { language, setLanguage, t } = useLanguage();
+  
   const [settings, setSettings] = useState<UserSettings>({
     darkMode: false,
     emailNotifications: true,
     pushNotifications: true,
     storeTimeZone: "Africa/Casablanca",
     currency: "MAD",
-    language: "en"
+    language: language
   });
   
   const { toast } = useToast();
@@ -41,47 +45,56 @@ const Settings: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // Update settings when language changes from context
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      language
+    }));
+  }, [language]);
+
   const saveSettings = () => {
     localStorage.setItem("userSettings", JSON.stringify(settings));
     toast({
-      title: "Settings saved",
-      description: "Your settings have been saved successfully.",
+      title: t("settings.saved"),
+      description: t("settings.saved.description"),
     });
   };
 
   const changeLanguage = (lang: string) => {
+    setLanguage(lang as "en" | "ar" | "fr");
     setSettings({ ...settings, language: lang });
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("settings.title")}</h1>
         <p className="text-gray-500">
-          Manage your account settings and preferences.
+          {t("settings.description")}
         </p>
       </div>
       
       <Tabs defaultValue="account" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="store">Store</TabsTrigger>
-          <TabsTrigger value="language">Language</TabsTrigger>
+          <TabsTrigger value="account">{t("settings.tabs.account")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("settings.tabs.notifications")}</TabsTrigger>
+          <TabsTrigger value="store">{t("settings.tabs.store")}</TabsTrigger>
+          <TabsTrigger value="language">{t("settings.tabs.language")}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="account" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
+              <CardTitle>{t("settings.account.title")}</CardTitle>
               <CardDescription>
-                Manage your account preferences and settings.
+                {t("settings.account.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="darkMode">Dark Mode</Label>
+                  <Label htmlFor="darkMode">{t("settings.account.darkMode")}</Label>
                   <Switch
                     id="darkMode"
                     checked={settings.darkMode}
@@ -91,12 +104,12 @@ const Settings: React.FC = () => {
                   />
                 </div>
                 <p className="text-sm text-gray-500">
-                  Enable dark mode for a different visual experience.
+                  {t("settings.account.darkMode.description")}
                 </p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Change Password</Label>
+                <Label htmlFor="password">{t("settings.account.changePassword")}</Label>
                 <Input id="password" type="password" placeholder="Enter new password" />
               </div>
               
@@ -105,7 +118,7 @@ const Settings: React.FC = () => {
                   className="bg-store-DEFAULT hover:bg-store-DEFAULT/90"
                   onClick={saveSettings}
                 >
-                  Save Changes
+                  {t("settings.account.saveChanges")}
                 </Button>
               </div>
             </CardContent>
@@ -115,15 +128,15 @@ const Settings: React.FC = () => {
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
+              <CardTitle>{t("settings.notifications.title")}</CardTitle>
               <CardDescription>
-                Manage how you receive notifications.
+                {t("settings.notifications.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="emailNotifications">Email Notifications</Label>
+                  <Label htmlFor="emailNotifications">{t("settings.notifications.email")}</Label>
                   <Switch
                     id="emailNotifications"
                     checked={settings.emailNotifications}
@@ -133,13 +146,13 @@ const Settings: React.FC = () => {
                   />
                 </div>
                 <p className="text-sm text-gray-500">
-                  Receive notifications about orders and products via email.
+                  {t("settings.notifications.email.description")}
                 </p>
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="pushNotifications">Push Notifications</Label>
+                  <Label htmlFor="pushNotifications">{t("settings.notifications.push")}</Label>
                   <Switch
                     id="pushNotifications"
                     checked={settings.pushNotifications}
@@ -149,7 +162,7 @@ const Settings: React.FC = () => {
                   />
                 </div>
                 <p className="text-sm text-gray-500">
-                  Receive push notifications for important updates.
+                  {t("settings.notifications.push.description")}
                 </p>
               </div>
               
@@ -158,7 +171,7 @@ const Settings: React.FC = () => {
                   className="bg-store-DEFAULT hover:bg-store-DEFAULT/90"
                   onClick={saveSettings}
                 >
-                  Save Changes
+                  {t("settings.account.saveChanges")}
                 </Button>
               </div>
             </CardContent>
@@ -168,14 +181,14 @@ const Settings: React.FC = () => {
         <TabsContent value="store" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Store Settings</CardTitle>
+              <CardTitle>{t("settings.store.title")}</CardTitle>
               <CardDescription>
-                Manage your store preferences.
+                {t("settings.store.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="timeZone">Store Time Zone</Label>
+                <Label htmlFor="timeZone">{t("settings.store.timeZone")}</Label>
                 <select
                   id="timeZone"
                   className="w-full p-2 border rounded-md"
@@ -194,7 +207,7 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency">{t("settings.store.currency")}</Label>
                 <select
                   id="currency"
                   className="w-full p-2 border rounded-md"
@@ -217,7 +230,7 @@ const Settings: React.FC = () => {
                   className="bg-store-DEFAULT hover:bg-store-DEFAULT/90"
                   onClick={saveSettings}
                 >
-                  Save Changes
+                  {t("settings.account.saveChanges")}
                 </Button>
               </div>
             </CardContent>
@@ -227,46 +240,46 @@ const Settings: React.FC = () => {
         <TabsContent value="language" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Language Settings</CardTitle>
+              <CardTitle>{t("settings.language.title")}</CardTitle>
               <CardDescription>
-                Choose your preferred language for the application.
+                {t("settings.language.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col space-y-4">
-                <Label className="text-base">Select Language</Label>
+                <Label className="text-base">{t("settings.language.select")}</Label>
                 <div className="flex flex-wrap gap-3">
                   <Button 
-                    variant={settings.language === "en" ? "default" : "outline"}
+                    variant={language === "en" ? "default" : "outline"}
                     onClick={() => changeLanguage("en")}
                     className="flex items-center space-x-2"
                   >
                     <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
                       🇬🇧
                     </span>
-                    <span>English</span>
+                    <span>{t("languages.english")}</span>
                   </Button>
                   
                   <Button 
-                    variant={settings.language === "ar" ? "default" : "outline"}
+                    variant={language === "ar" ? "default" : "outline"}
                     onClick={() => changeLanguage("ar")}
                     className="flex items-center space-x-2"
                   >
                     <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
                       🇸🇦
                     </span>
-                    <span>العربية</span>
+                    <span>{t("languages.arabic")}</span>
                   </Button>
                   
                   <Button 
-                    variant={settings.language === "fr" ? "default" : "outline"}
+                    variant={language === "fr" ? "default" : "outline"}
                     onClick={() => changeLanguage("fr")}
                     className="flex items-center space-x-2"
                   >
                     <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
                       🇫🇷
                     </span>
-                    <span>Français</span>
+                    <span>{t("languages.french")}</span>
                   </Button>
                 </div>
               </div>
@@ -276,7 +289,7 @@ const Settings: React.FC = () => {
                   className="bg-store-DEFAULT hover:bg-store-DEFAULT/90"
                   onClick={saveSettings}
                 >
-                  Save Changes
+                  {t("settings.account.saveChanges")}
                 </Button>
               </div>
             </CardContent>

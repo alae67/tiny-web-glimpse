@@ -19,6 +19,7 @@ import UserManagement from "./pages/UserManagement";
 import { checkAndMigrate } from "./utils/fileStorage";
 import { toast } from "sonner";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 const queryClient = new QueryClient();
 
@@ -165,66 +166,68 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
-              {/* Public Routes - Login is now the default route */}
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              
-              {/* Dashboard Routes - Protected */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }>
-                {/* Admin-only routes */}
-                <Route index element={
-                  <ProtectedRoute requiredPermission="access_admin_dashboard">
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="popular" element={
-                  <ProtectedRoute requiredPermission="access_admin_dashboard">
-                    <PopularItems />
-                  </ProtectedRoute>
-                } />
-                <Route path="users" element={
-                  <ProtectedRoute requiredPermission="access_admin_dashboard">
-                    <UserManagement />
-                  </ProtectedRoute>
-                } />
+            <LanguageProvider>
+              <Routes>
+                {/* Public Routes - Login is now the default route */}
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 
-                {/* User-accessible routes */}
-                <Route path="orders" element={
-                  <ProtectedRoute requiredPermission="view_own_orders">
-                    <Orders />
+                {/* Dashboard Routes - Protected */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
                   </ProtectedRoute>
-                } />
-                <Route path="products" element={
-                  <ProtectedRoute requiredPermission="view_products">
-                    <Products />
-                  </ProtectedRoute>
-                } />
-                <Route path="profile" element={
-                  <ProtectedRoute requiredPermission="view_profile">
-                    <Profile />
-                  </ProtectedRoute>
-                } />
-                <Route path="settings" element={
-                  <ProtectedRoute requiredPermission="view_settings">
-                    <Settings />
-                  </ProtectedRoute>
-                } />
-                <Route path="quick-scan" element={
-                  <ProtectedRoute requiredPermission="view_products">
-                    <QuickScan />
-                  </ProtectedRoute>
-                } />
-              </Route>
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                }>
+                  {/* Admin-only routes */}
+                  <Route index element={
+                    <ProtectedRoute requiredPermission="access_admin_dashboard">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="popular" element={
+                    <ProtectedRoute requiredPermission="access_admin_dashboard">
+                      <PopularItems />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="users" element={
+                    <ProtectedRoute requiredPermission="access_admin_dashboard">
+                      <UserManagement />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* User-accessible routes */}
+                  <Route path="orders" element={
+                    <ProtectedRoute requiredPermission="view_own_orders">
+                      <Orders />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="products" element={
+                    <ProtectedRoute requiredPermission="view_products">
+                      <Products />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="profile" element={
+                    <ProtectedRoute requiredPermission="view_profile">
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="settings" element={
+                    <ProtectedRoute requiredPermission="view_settings">
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="quick-scan" element={
+                    <ProtectedRoute requiredPermission="view_products">
+                      <QuickScan />
+                    </ProtectedRoute>
+                  } />
+                </Route>
+                
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </LanguageProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

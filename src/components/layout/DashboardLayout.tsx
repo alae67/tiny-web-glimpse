@@ -4,9 +4,11 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const DashboardLayout: React.FC = () => {
   const { isLoggedIn, isAdmin } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,6 +23,12 @@ const DashboardLayout: React.FC = () => {
       navigate("/dashboard/orders");
     }
   }, [isLoggedIn, navigate, isAdmin, location.pathname]);
+
+  // Add language class to the root element based on current language
+  useEffect(() => {
+    // Set the language attribute on the html element
+    document.documentElement.lang = language;
+  }, [language]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

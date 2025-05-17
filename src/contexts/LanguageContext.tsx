@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 // Define language types and context type
@@ -51,7 +52,17 @@ const translations = {
     "dashboard.products": "Products",
     "dashboard.popular": "Popular Items",
     "dashboard.users": "User Management",
-    "dashboard.quickScan": "Quick Scan"
+    "dashboard.quickScan": "Quick Scan",
+    "navbar.profile": "My Profile",
+    "navbar.admin": "Admin",
+    "navbar.profileSettings": "Profile Settings",
+    "navbar.accountSettings": "Account Settings",
+    "navbar.logout": "Logout",
+    "popularItems.title": "Popular Items",
+    "popularItems.description": "Top selling products in your store",
+    "popularItems.loading": "Loading products...",
+    "popularItems.noProducts": "No popular products found",
+    "popularItems.eligible": "Eligible"
   },
   ar: {
     "settings.title": "الإعدادات",
@@ -90,7 +101,17 @@ const translations = {
     "dashboard.products": "المنتجات",
     "dashboard.popular": "العناصر الشائعة",
     "dashboard.users": "إدارة المستخدمين",
-    "dashboard.quickScan": "المسح السريع"
+    "dashboard.quickScan": "المسح السريع",
+    "navbar.profile": "ملفي الشخصي",
+    "navbar.admin": "مدير",
+    "navbar.profileSettings": "إعدادات الملف الشخصي",
+    "navbar.accountSettings": "إعدادات الحساب",
+    "navbar.logout": "تسجيل الخروج",
+    "popularItems.title": "العناصر الشائعة",
+    "popularItems.description": "المنتجات الأكثر مبيعًا في متجرك",
+    "popularItems.loading": "جاري تحميل المنتجات...",
+    "popularItems.noProducts": "لا توجد منتجات شائعة",
+    "popularItems.eligible": "مؤهل"
   },
   fr: {
     "settings.title": "Paramètres",
@@ -129,7 +150,17 @@ const translations = {
     "dashboard.products": "Produits",
     "dashboard.popular": "Articles populaires",
     "dashboard.users": "Gestion des utilisateurs",
-    "dashboard.quickScan": "Scan rapide"
+    "dashboard.quickScan": "Scan rapide",
+    "navbar.profile": "Mon Profil",
+    "navbar.admin": "Admin",
+    "navbar.profileSettings": "Paramètres du profil",
+    "navbar.accountSettings": "Paramètres du compte",
+    "navbar.logout": "Déconnexion",
+    "popularItems.title": "Articles populaires",
+    "popularItems.description": "Produits les plus vendus dans votre boutique",
+    "popularItems.loading": "Chargement des produits...",
+    "popularItems.noProducts": "Aucun produit populaire trouvé",
+    "popularItems.eligible": "Éligible"
   }
 };
 

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Gift } from "lucide-react";
 import { getAllProducts } from "@/utils/fileStorage";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Product {
   id: string;
@@ -21,6 +22,7 @@ const PopularItems: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("DH");
+  const { t } = useLanguage();
 
   useEffect(() => {
     loadProducts();
@@ -58,8 +60,8 @@ const PopularItems: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Popular Items</h1>
-          <p className="text-gray-500">Loading products...</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("popularItems.title")}</h1>
+          <p className="text-gray-500">{t("popularItems.loading")}</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -71,8 +73,8 @@ const PopularItems: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Popular Items</h1>
-        <p className="text-gray-500">Top selling products in your store</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("popularItems.title")}</h1>
+        <p className="text-gray-500">{t("popularItems.description")}</p>
       </div>
 
       {sortedProducts.length > 0 ? (
@@ -94,7 +96,7 @@ const PopularItems: React.FC = () => {
                     <p className="text-gray-700">{typeof product.price === 'string' ? parseFloat(product.price).toFixed(2) : product.price.toFixed(2)} {currencySymbol}</p>
                     {product.winEligible && (
                       <Badge className="bg-yellow-500 mt-2">
-                        <Gift className="h-3 w-3 mr-1" /> Eligible
+                        <Gift className="h-3 w-3 mr-1" /> {t("popularItems.eligible")}
                       </Badge>
                     )}
                   </div>
@@ -105,7 +107,7 @@ const PopularItems: React.FC = () => {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500">No popular products found</p>
+          <p className="text-gray-500">{t("popularItems.noProducts")}</p>
         </div>
       )}
     </div>

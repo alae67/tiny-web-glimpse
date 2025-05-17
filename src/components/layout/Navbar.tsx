@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -30,6 +31,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Get current user data from localStorage
@@ -96,28 +98,28 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white">
-              <DropdownMenuLabel>My Profile</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("navbar.profile")}</DropdownMenuLabel>
               {userData && (
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium">{userData.name}</p>
                   <p className="text-xs text-gray-500">{userData.email}</p>
                   {userData.isAdmin && (
                     <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium bg-store-DEFAULT text-white">
-                      Admin
+                      {t("navbar.admin")}
                     </span>
                   )}
                 </div>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
-                <User className="mr-2 h-4 w-4" />Profile Settings
+                <User className="mr-2 h-4 w-4" />{t("navbar.profileSettings")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
-                <Settings className="mr-2 h-4 w-4" />Account Settings
+                <Settings className="mr-2 h-4 w-4" />{t("navbar.accountSettings")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />Logout
+                <LogOut className="mr-2 h-4 w-4" />{t("navbar.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

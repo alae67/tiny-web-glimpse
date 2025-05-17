@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 // Define language types and context type
@@ -46,6 +45,13 @@ const translations = {
     "languages.english": "English",
     "languages.arabic": "العربية",
     "languages.french": "Français",
+    "dashboard.title": "Dashboard",
+    "dashboard.overview": "Overview",
+    "dashboard.orders": "Orders",
+    "dashboard.products": "Products",
+    "dashboard.popular": "Popular Items",
+    "dashboard.users": "User Management",
+    "dashboard.quickScan": "Quick Scan"
   },
   ar: {
     "settings.title": "الإعدادات",
@@ -78,6 +84,13 @@ const translations = {
     "languages.english": "English",
     "languages.arabic": "العربية",
     "languages.french": "Français",
+    "dashboard.title": "لوحة التحكم",
+    "dashboard.overview": "نظرة عامة",
+    "dashboard.orders": "الطلبات",
+    "dashboard.products": "المنتجات",
+    "dashboard.popular": "العناصر الشائعة",
+    "dashboard.users": "إدارة المستخدمين",
+    "dashboard.quickScan": "المسح السريع"
   },
   fr: {
     "settings.title": "Paramètres",
@@ -110,6 +123,13 @@ const translations = {
     "languages.english": "English",
     "languages.arabic": "العربية",
     "languages.french": "Français",
+    "dashboard.title": "Tableau de bord",
+    "dashboard.overview": "Aperçu",
+    "dashboard.orders": "Commandes",
+    "dashboard.products": "Produits",
+    "dashboard.popular": "Articles populaires",
+    "dashboard.users": "Gestion des utilisateurs",
+    "dashboard.quickScan": "Scan rapide"
   }
 };
 

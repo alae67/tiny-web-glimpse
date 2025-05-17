@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavItemProps {
   to: string;
@@ -48,6 +49,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) => {
   const location = useLocation();
   const { isAdmin } = useAuth();
+  const { t } = useLanguage();
   
   const handleNavClick = () => {
     if (isMobile && onCloseMobile) {
@@ -61,13 +63,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
     <div className="fixed top-0 left-0 h-full bg-white border-r border-gray-200 w-64 py-6 px-4 space-y-6 z-20 overflow-y-auto">
       <div className="space-y-1">
         <h2 className="mb-2 px-3 text-lg font-semibold tracking-tight">
-          Dashboard
+          {t("dashboard.title")}
         </h2>
         {isAdmin && (
           <NavItem
             to="/dashboard"
             icon={<LayoutDashboard className="h-5 w-5" />}
-            label="Overview"
+            label={t("dashboard.overview")}
             isActive={isActive("/dashboard")}
             onClick={handleNavClick}
           />
@@ -75,14 +77,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
         <NavItem
           to="/dashboard/orders"
           icon={<ShoppingCart className="h-5 w-5" />}
-          label="Orders"
+          label={t("dashboard.orders")}
           isActive={isActive("/dashboard/orders")}
           onClick={handleNavClick}
         />
         <NavItem
           to="/dashboard/products"
           icon={<Package className="h-5 w-5" />}
-          label="Products"
+          label={t("dashboard.products")}
           isActive={isActive("/dashboard/products")}
           onClick={handleNavClick}
         />
@@ -91,14 +93,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
             <NavItem
               to="/dashboard/popular"
               icon={<TrendingUp className="h-5 w-5" />}
-              label="Popular Items"
+              label={t("dashboard.popular")}
               isActive={isActive("/dashboard/popular")}
               onClick={handleNavClick}
             />
             <NavItem
               to="/dashboard/users"
               icon={<Users className="h-5 w-5" />}
-              label="User Management"
+              label={t("dashboard.users")}
               isActive={isActive("/dashboard/users")}
               onClick={handleNavClick}
             />
@@ -107,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
         <NavItem
           to="/dashboard/quick-scan"
           icon={<Scan className="h-5 w-5 " />}
-          label="Quick Scan"
+          label={t("dashboard.quickScan")}
           isActive={isActive("/dashboard/quick-scan")}
           onClick={handleNavClick}
         />

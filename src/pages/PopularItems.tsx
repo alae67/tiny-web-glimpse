@@ -22,7 +22,7 @@ const PopularItems: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("DH");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     loadProducts();
@@ -37,7 +37,7 @@ const PopularItems: React.FC = () => {
     } catch (error) {
       console.error("Error loading currency settings:", error);
     }
-  }, []);
+  }, [language]); // Re-fetch when language changes
 
   const loadProducts = async () => {
     try {
@@ -78,7 +78,7 @@ const PopularItems: React.FC = () => {
       </div>
 
       {sortedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6`}>
           {sortedProducts.map((product) => (
             <Card key={product.id}>
               <CardContent className="p-4">

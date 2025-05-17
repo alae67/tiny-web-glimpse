@@ -49,7 +49,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) => {
   const location = useLocation();
   const { isAdmin } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const handleNavClick = () => {
     if (isMobile && onCloseMobile) {
@@ -59,8 +59,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Force re-render when language changes
+  React.useEffect(() => {
+    // This is just to make sure the component re-renders when language changes
+  }, [language]);
+
   return (
-    <div className="fixed top-0 left-0 h-full bg-white border-r border-gray-200 w-64 py-6 px-4 space-y-6 z-20 overflow-y-auto">
+    <div className={`fixed top-0 ${language === "ar" ? "right-0" : "left-0"} h-full bg-white border-r border-gray-200 w-64 py-6 px-4 space-y-6 z-20 overflow-y-auto`}>
       <div className="space-y-1">
         <h2 className="mb-2 px-3 text-lg font-semibold tracking-tight">
           {t("dashboard.title")}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
+import { Languages } from "lucide-react";
 
 interface UserSettings {
   darkMode: boolean;
@@ -14,6 +14,7 @@ interface UserSettings {
   pushNotifications: boolean;
   storeTimeZone: string;
   currency: string;
+  language: string;
 }
 
 const Settings: React.FC = () => {
@@ -22,7 +23,8 @@ const Settings: React.FC = () => {
     emailNotifications: true,
     pushNotifications: true,
     storeTimeZone: "Africa/Casablanca",
-    currency: "MAD"
+    currency: "MAD",
+    language: "en"
   });
   
   const { toast } = useToast();
@@ -47,6 +49,10 @@ const Settings: React.FC = () => {
     });
   };
 
+  const changeLanguage = (lang: string) => {
+    setSettings({ ...settings, language: lang });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -61,6 +67,7 @@ const Settings: React.FC = () => {
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="store">Store</TabsTrigger>
+          <TabsTrigger value="language">Language</TabsTrigger>
         </TabsList>
         
         <TabsContent value="account" className="space-y-4">
@@ -203,6 +210,65 @@ const Settings: React.FC = () => {
                   <option value="CAD">CAD - Canadian Dollar</option>
                   <option value="AUD">AUD - Australian Dollar</option>
                 </select>
+              </div>
+              
+              <div className="pt-4">
+                <Button 
+                  className="bg-store-DEFAULT hover:bg-store-DEFAULT/90"
+                  onClick={saveSettings}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="language" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Language Settings</CardTitle>
+              <CardDescription>
+                Choose your preferred language for the application.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col space-y-4">
+                <Label className="text-base">Select Language</Label>
+                <div className="flex flex-wrap gap-3">
+                  <Button 
+                    variant={settings.language === "en" ? "default" : "outline"}
+                    onClick={() => changeLanguage("en")}
+                    className="flex items-center space-x-2"
+                  >
+                    <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
+                      🇬🇧
+                    </span>
+                    <span>English</span>
+                  </Button>
+                  
+                  <Button 
+                    variant={settings.language === "ar" ? "default" : "outline"}
+                    onClick={() => changeLanguage("ar")}
+                    className="flex items-center space-x-2"
+                  >
+                    <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
+                      🇸🇦
+                    </span>
+                    <span>العربية</span>
+                  </Button>
+                  
+                  <Button 
+                    variant={settings.language === "fr" ? "default" : "outline"}
+                    onClick={() => changeLanguage("fr")}
+                    className="flex items-center space-x-2"
+                  >
+                    <span className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
+                      🇫🇷
+                    </span>
+                    <span>Français</span>
+                  </Button>
+                </div>
               </div>
               
               <div className="pt-4">

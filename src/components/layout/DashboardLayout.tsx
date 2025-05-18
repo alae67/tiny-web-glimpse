@@ -29,7 +29,7 @@ const DashboardLayout: React.FC = () => {
     // Set the language attribute on the html element
     document.documentElement.lang = language;
     
-    // Set the direction attribute based on the language
+    // Set the direction attribute based on the language for text direction only
     if (language === "ar") {
       document.documentElement.dir = "rtl";
     } else {
@@ -38,7 +38,7 @@ const DashboardLayout: React.FC = () => {
   }, [language]);
 
   return (
-    <div className={`min-h-screen bg-gray-50 flex ${language === "ar" ? "rtl" : "ltr"}`}>
+    <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
       <div className="flex-1 ml-64">
         <Navbar onMenuClick={() => {}} />

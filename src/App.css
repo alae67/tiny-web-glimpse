@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -39,4 +40,24 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Override RTL specific styling to maintain consistent layout */
+[dir="rtl"] .fixed.top-0.left-0 {
+  left: 0 !important;
+  right: auto !important;
+}
+
+[dir="rtl"] .ml-64 {
+  margin-left: 16rem !important;
+  margin-right: 0 !important;
+}
+
+/* Ensure correct text alignment while preserving layout */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
 }

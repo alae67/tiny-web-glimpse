@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,9 +19,26 @@ import UserManagement from "./pages/UserManagement";
 import { checkAndMigrate } from "./utils/fileStorage";
 import { toast } from "sonner";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
-import { LanguageProvider } from "./contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 
 const queryClient = new QueryClient();
+
+// Language observer component to synchronize language on route changes
+const LanguageObserver = () => {
+  const location = useLocation();
+  const { setLanguage } = useLanguage();
+  
+  useEffect(() => {
+    // Get language from localStorage on every navigation
+    const savedLanguage = localStorage.getItem("appLanguage");
+    if (savedLanguage && ["en", "ar", "fr"].includes(savedLanguage)) {
+      console.log("Root language observer: applying language", savedLanguage, "on path", location.pathname);
+      setLanguage(savedLanguage as "en" | "ar" | "fr");
+    }
+  }, [location.pathname, setLanguage]);
+  
+  return null; // This component doesn't render anything
+};
 
 // Protected route component with permission check
 const ProtectedRoute = ({ 
@@ -167,6 +184,7 @@ const App = () => {
         <BrowserRouter>
           <AuthProvider>
             <LanguageProvider>
+              <LanguageObserver />
               <Routes>
                 {/* Public Routes - Login is now the default route */}
                 <Route path="/" element={<Login />} />

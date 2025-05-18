@@ -8,10 +8,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const DashboardLayout: React.FC = () => {
   const { isLoggedIn, isAdmin } = useAuth();
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Check for authentication and redirect accordingly
   useEffect(() => {
     // Check if user is logged in
     if (!isLoggedIn) {
@@ -24,21 +25,27 @@ const DashboardLayout: React.FC = () => {
     }
   }, [isLoggedIn, navigate, isAdmin, location.pathname]);
 
-  // Add language class to the root element based on current language
+  // Apply language settings on mount and route changes
   useEffect(() => {
+    // Get language from localStorage on every navigation
+    const savedLanguage = localStorage.getItem("appLanguage");
+    if (savedLanguage && ["en", "ar", "fr"].includes(savedLanguage) && savedLanguage !== language) {
+      console.log("Applying saved language from localStorage:", savedLanguage);
+      setLanguage(savedLanguage as "en" | "ar" | "fr");
+    }
+
     // Set the language attribute on the html element
     document.documentElement.lang = language;
     
-    // Set the direction attribute based on the language for text direction only
+    // Set the direction attribute based on the language
     if (language === "ar") {
       document.documentElement.dir = "rtl";
     } else {
       document.documentElement.dir = "ltr";
     }
 
-    // Force re-render of the layout when language changes
-    console.log("Language changed to:", language);
-  }, [language]);
+    console.log("Language applied on route change:", language, "Path:", location.pathname);
+  }, [language, setLanguage, location.pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

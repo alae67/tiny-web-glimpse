@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,7 @@ interface Product {
   category: string;  // Changed from optional to required to match fileStorage.ts
   barcode?: string;
   userId?: string;
-  stock?: number;
+  stock: number;  // Changed from optional to required to match fileStorage.ts
 }
 
 const QuickScan: React.FC = () => {

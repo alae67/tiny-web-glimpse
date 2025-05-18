@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { CameraScanner } from "@/components/scanner/CameraScanner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScanBarcode, ShoppingCart, Database, Camera } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { getAllProducts, saveOrder } from "@/utils/fileStorage";
+import { getAllProducts, saveOrder, saveProduct } from "@/utils/fileStorage";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -77,7 +76,7 @@ const QuickScan: React.FC = () => {
     }
   };
 
-  const handleCreateOrder = (scannedCode: string) => {
+  const handleCreateOrder = async (scannedCode: string) => {
     console.log("Creating order for product code:", scannedCode);
     
     // Save the scanned barcode to history
@@ -85,8 +84,8 @@ const QuickScan: React.FC = () => {
     setScannedBarcodes(updatedBarcodes);
     localStorage.setItem("scannedBarcodes", JSON.stringify(updatedBarcodes));
     
-    // Find product by barcode or id
-    const product = availableProducts.find(
+    // Try to find product by barcode or id
+    let product = availableProducts.find(
       (p) => p.id === scannedCode || p.barcode === scannedCode
     );
     
@@ -100,20 +99,46 @@ const QuickScan: React.FC = () => {
         });
         return;
       }
-      
-      createNewOrder(product);
-      setLastOrderedProduct(product);
-      setOrderCount(prev => prev + 1);
     } else {
-      toast({
-        title: "Product Not Found",
-        description: `No product found for code: ${scannedCode}`,
-        variant: "destructive",
-      });
+      // If product doesn't exist, create a new one with default values
+      product = {
+        id: `product-${Date.now()}`,
+        barcode: scannedCode,
+        name: `Product ${scannedCode}`,
+        price: 0,
+        stock: 10,
+        winEligible: false,
+        category: "Scanned Products",
+      };
+      
+      // Save the new product to database
+      try {
+        await saveProduct(product);
+        toast({
+          title: "New Product Created",
+          description: `Created product with barcode: ${scannedCode}`,
+        });
+        
+        // Refresh available products
+        await loadAvailableProducts();
+      } catch (error) {
+        console.error("Error saving new product:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create new product",
+          variant: "destructive",
+        });
+        return;
+      }
     }
+    
+    // Create new order with the product
+    await createNewOrder(product);
+    setLastOrderedProduct(product);
+    setOrderCount(prev => prev + 1);
   };
 
-  const updateProductStock = (productId: string, quantity: number = 1) => {
+  const updateProductStock = async (productId: string, quantity: number = 1) => {
     try {
       // Get current products from localStorage
       const storedProducts = localStorage.getItem("products");
@@ -132,6 +157,9 @@ const QuickScan: React.FC = () => {
         // Save updated products back to localStorage
         localStorage.setItem("products", JSON.stringify(products));
         console.log(`Updated stock for product ${productId}: ${products[productIndex].stock}`);
+        
+        // Refresh available products
+        await loadAvailableProducts();
       }
     } catch (error) {
       console.error("Error updating product stock:", error);
@@ -173,7 +201,7 @@ const QuickScan: React.FC = () => {
       await saveOrder(newOrder);
       
       // Update product stock
-      updateProductStock(product.id);
+      await updateProductStock(product.id);
       
       toast({
         title: "Order Created",
@@ -251,7 +279,7 @@ const QuickScan: React.FC = () => {
               <TabsContent value="camera-scanner">
                 <CameraScanner 
                   onCodeDetected={handleCreateOrder}
-                  autoClose={true}
+                  autoClose={false}
                 />
               </TabsContent>
             </CardContent>

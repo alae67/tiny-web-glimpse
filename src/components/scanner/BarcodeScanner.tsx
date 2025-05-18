@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScanBarcode } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
 
 interface BarcodeScannerProps {
   onProductScanned: (code: string) => void;
@@ -30,8 +29,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     if (createOrderMode && onCreateOrder) {
       onCreateOrder(scannedCode);
       toast({
-        title: "Auto Order",
-        description: `Creating order with product: ${scannedCode}`,
+        title: "Processing Scanned Product",
+        description: `Processing product with code: ${scannedCode}`,
       });
     } else {
       toast({
@@ -72,7 +71,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         <Alert className={`${createOrderMode ? "bg-blue-50" : "bg-blue-50"}`}>
           <AlertDescription className="text-sm">
             {createOrderMode 
-              ? "Scan any product barcode to instantly create a new order with that product."
+              ? "Scan any product barcode to instantly create a new order with that product. New products will be automatically added to the database."
               : "Connect your USB or wireless barcode scanner and scan a product code to add it to the order."
             }
             {currentBuffer && currentBuffer.length > 0 && (

@@ -39,6 +39,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { CameraScanner } from "@/components/scanner/CameraScanner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAllProducts, saveProduct } from "@/utils/fileStorage";
 
 interface Product {
   id: string;
@@ -165,30 +166,34 @@ const Orders: React.FC = () => {
     }
   }, [productSearchTerm, availableProducts]);
 
-  const loadAvailableProducts = () => {
-    const storedProducts = localStorage.getItem("products");
-    if (storedProducts) {
-      try {
-        const parsedProducts = JSON.parse(storedProducts);
-        // Transform to the format we need for order items
-        const productOptions = parsedProducts.map((product: any) => ({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: 1,
-          winEligible: product.winEligible !== undefined ? product.winEligible : true,
-          imageUrl: product.imageUrl,
-          category: product.category,
-          barcode: product.barcode, // Add barcode property
-          stock: product.stock || 10 // Include stock information
-        }));
-        setAvailableProducts(productOptions);
-        setFilteredAvailableProducts(productOptions);
-      } catch (error) {
-        console.error("Error parsing products:", error);
-        setAvailableProducts([]);
-        setFilteredAvailableProducts([]);
-      }
+  // New method to load products from the database
+  const loadAvailableProducts = async () => {
+    try {
+      const products = await getAllProducts();
+      console.log("Loaded products:", products.length);
+      
+      // Transform to the format we need for order items
+      const productOptions = products.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+        quantity: 1,
+        winEligible: product.winEligible !== undefined ? product.winEligible : false,
+        imageUrl: product.imageUrl,
+        category: product.category,
+        barcode: product.barcode,
+        stock: product.stock || 10
+      }));
+      
+      setAvailableProducts(productOptions);
+      setFilteredAvailableProducts(productOptions);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive"
+      });
     }
   };
 
@@ -252,6 +257,59 @@ const Orders: React.FC = () => {
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Modified method to handle scanned products
+  const handleScannedCode = async (code: string) => {
+    console.log("Scanned code:", code);
+    
+    // Try to find product with matching id or barcode property
+    let product = availableProducts.find(
+      (p) => p.id === code || p.barcode === code
+    );
+    
+    if (product) {
+      handleQuickAddProduct(product);
+      toast({
+        title: "Product Added",
+        description: `${product.name} was added to the order`,
+      });
+    } else {
+      // If product not found, create a new one
+      const newProduct = {
+        id: `product-${Date.now()}`,
+        name: `Product ${code}`,
+        barcode: code,
+        price: 0,
+        stock: 10,
+        winEligible: false,
+        category: "Scanned Products",
+        quantity: 1
+      };
+      
+      try {
+        // Save to database
+        await saveProduct(newProduct);
+        
+        toast({
+          title: "New Product Created",
+          description: `Created and added product with barcode: ${code}`,
+        });
+        
+        // Add to selected products
+        setSelectedProducts(prev => [...prev, newProduct]);
+        
+        // Refresh available products
+        await loadAvailableProducts();
+      } catch (error) {
+        console.error("Error creating new product:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create new product",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -455,30 +513,6 @@ const Orders: React.FC = () => {
       title: "Success",
       description: "Order deleted successfully!",
     });
-  };
-
-  // Handle scanned product code
-  const handleScannedCode = (code: string) => {
-    console.log("Scanned code:", code);
-    
-    // Look for product with matching id or barcode property
-    const product = availableProducts.find(
-      (p) => p.id === code || p.barcode === code
-    );
-    
-    if (product) {
-      handleQuickAddProduct(product);
-      toast({
-        title: "Product Added",
-        description: `${product.name} was added to the order`,
-      });
-    } else {
-      toast({
-        title: "Product Not Found",
-        description: `No product found for code: ${code}`,
-        variant: "destructive",
-      });
-    }
   };
 
   return (

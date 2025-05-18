@@ -65,7 +65,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           
           toast({
             title: "Barcode Detected",
-            description: `Detected: ${decodedText}`,
+            description: `Detected code: ${decodedText}`,
           });
           
           // Auto-close if enabled

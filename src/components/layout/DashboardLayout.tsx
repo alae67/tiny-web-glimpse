@@ -35,6 +35,9 @@ const DashboardLayout: React.FC = () => {
     } else {
       document.documentElement.dir = "ltr";
     }
+
+    // Force re-render of the layout when language changes
+    console.log("Language changed to:", language);
   }, [language]);
 
   return (

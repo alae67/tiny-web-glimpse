@@ -178,12 +178,22 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error("Error parsing language settings", error);
       }
     }
+    
+    // Also check for language directly in localStorage as fallback
+    const savedLanguage = localStorage.getItem("appLanguage");
+    if (savedLanguage && ["en", "ar", "fr"].includes(savedLanguage)) {
+      return savedLanguage as Language;
+    }
+    
     return "en";
   });
 
   // Update language and save to localStorage
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
+    
+    // Save language directly to localStorage for reliable persistence
+    localStorage.setItem("appLanguage", lang);
     
     // Update the language in userSettings in localStorage
     const savedSettings = localStorage.getItem("userSettings");
@@ -195,6 +205,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } catch (error) {
         console.error("Error updating language in settings", error);
       }
+    } else {
+      // If no settings exist yet, create them
+      localStorage.setItem("userSettings", JSON.stringify({ language: lang }));
     }
     
     // Update document direction for RTL languages
@@ -203,6 +216,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       document.documentElement.dir = "ltr";
     }
+    
+    console.log("Language set to:", lang);
   };
 
   // Function to get translation
@@ -210,14 +225,28 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
-  // Set initial document direction on mount
+  // Set initial document direction on mount and handle language changes
   useEffect(() => {
     if (language === "ar") {
       document.documentElement.dir = "rtl";
     } else {
       document.documentElement.dir = "ltr";
     }
-  }, []);
+    
+    // Set up a storage event listener to sync language across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "appLanguage" && event.newValue) {
+        if (["en", "ar", "fr"].includes(event.newValue)) {
+          setLanguageState(event.newValue as Language);
+        }
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [language]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

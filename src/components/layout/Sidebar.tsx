@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -50,6 +50,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
   const location = useLocation();
   const { isAdmin } = useAuth();
   const { t, language } = useLanguage();
+  
+  // Force re-render when language changes
+  useEffect(() => {
+    console.log("Sidebar language updated:", language);
+  }, [language]);
   
   const handleNavClick = () => {
     if (isMobile && onCloseMobile) {

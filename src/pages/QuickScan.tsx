@@ -19,7 +19,7 @@ interface Product {
   quantity?: number;
   winEligible?: boolean;
   imageUrl?: string;
-  category?: string;
+  category: string;  // Changed from optional to required to match fileStorage.ts
   barcode?: string;
   userId?: string;
   stock?: number;
@@ -108,7 +108,7 @@ const QuickScan: React.FC = () => {
         price: 0,
         stock: 10,
         winEligible: false,
-        category: "Scanned Products",
+        category: "Scanned Products",  // This is now required in both interfaces
       };
       
       // Save the new product to database

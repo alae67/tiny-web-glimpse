@@ -11,6 +11,7 @@ interface Product {
   sales?: number;
   imageUrl?: string;
   userId?: string; // Add userId to associate products with users
+  barcode?: string; // Added barcode field to match QuickScan's Product interface
 }
 
 interface Order {

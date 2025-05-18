@@ -49,12 +49,12 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
       console.log("Starting camera scanner...");
       
-      // Start scanning with camera
+      // Start scanning with camera - increased qrbox size significantly
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: 400, height: 400 }, // Increased from 250x250 to 400x400
           aspectRatio: 1.0
         },
         (decodedText) => {
@@ -131,7 +131,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       
       <div 
         id="camera-scanner-container" 
-        className={`relative w-full h-80 bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+        className={`relative w-full h-96 bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
       />
       
       {lastDetectedCode && (

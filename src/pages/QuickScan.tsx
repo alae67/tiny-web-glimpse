@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,7 +101,7 @@ const QuickScan: React.FC = () => {
       }
     } else {
       // If product doesn't exist, create a new one with default values
-      product = {
+      const newProduct: Product = {
         id: `product-${Date.now()}`,
         barcode: scannedCode,
         name: `Product ${scannedCode}`,
@@ -114,11 +113,14 @@ const QuickScan: React.FC = () => {
       
       // Save the new product to database
       try {
-        await saveProduct(product);
+        await saveProduct(newProduct);
         toast({
           title: "New Product Created",
           description: `Created product with barcode: ${scannedCode}`,
         });
+        
+        // Set product to the newly created product
+        product = newProduct;
         
         // Refresh available products
         await loadAvailableProducts();

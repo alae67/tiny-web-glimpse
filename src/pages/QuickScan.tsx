@@ -77,6 +77,14 @@ const QuickScan: React.FC = () => {
   };
 
   const handleCreateOrder = async (scannedCode: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You need to be logged in to create orders",
+        variant: "destructive",
+      });
+      return;
+    }
     console.log("Creating order for product code:", scannedCode);
     
     // Save the scanned barcode to history

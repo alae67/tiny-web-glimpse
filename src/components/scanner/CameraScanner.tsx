@@ -1,8 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
-import { Camera, ScanBarcode, X } from 'lucide-react';
+import { Camera, ScanBarcode, X, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -17,6 +17,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [lastDetectedCode, setLastDetectedCode] = useState<string | null>(null);
+  const [scannerError, setScannerError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const { toast } = useToast();
 
@@ -46,16 +47,21 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
       setIsScanning(true);
       setLastDetectedCode(null);
+      setScannerError(null);
 
       console.log("Starting camera scanner...");
       
-      // Start scanning with camera - increased qrbox size significantly
+      // Enhanced configuration with better scanning capabilities
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
         {
-          fps: 10,
-          qrbox: { width: 400, height: 400 }, // Increased from 250x250 to 400x400
-          aspectRatio: 1.0
+          fps: 15, // Increased from 10 to 15 for better scanning
+          qrbox: { width: 500, height: 500 }, // Further increased scanning area
+          aspectRatio: 1.0,
+          disableFlip: false, // Allow image flip for better scanning
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true // Use native barcode detector if available
+          }
         },
         (decodedText) => {
           // Success callback - code detected
@@ -74,12 +80,13 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           }
         },
         (errorMessage) => {
-          // Error callback - errors during scanning
-          console.log('Scanning error:', errorMessage);
+          // Only log scanning errors, don't show to user as these are normal during scanning
+          console.log('Scanning status:', errorMessage);
         }
       );
     } catch (err) {
       console.error('Error starting scanner:', err);
+      setScannerError(`Camera error: ${err instanceof Error ? err.message : 'Unable to access camera'}`);
       toast({
         title: "Camera Error",
         description: "Unable to access camera. Please check permissions.",
@@ -100,6 +107,13 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
     }
   };
 
+  const restartScanner = async () => {
+    await stopScanning();
+    setTimeout(() => {
+      startScanning();
+    }, 300); // Short delay before restarting to ensure clean initialization
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col space-y-2">
@@ -118,21 +132,43 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
             <span>Start Camera Scanning</span>
           </Button>
         ) : (
-          <Button 
-            onClick={stopScanning} 
-            variant="outline"
-            className="flex items-center space-x-2 border-red-300 text-red-600"
-          >
-            <X size={18} />
-            <span>Stop Scanning</span>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button 
+              onClick={stopScanning} 
+              variant="outline"
+              className="flex items-center space-x-2 border-red-300 text-red-600"
+            >
+              <X size={18} />
+              <span>Stop Scanning</span>
+            </Button>
+            <Button 
+              onClick={restartScanner} 
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCcw size={18} />
+              <span>Restart Camera</span>
+            </Button>
+          </div>
         )}
       </div>
       
+      {scannerError && (
+        <Alert variant="destructive">
+          <AlertDescription>{scannerError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div 
         id="camera-scanner-container" 
-        className={`relative w-full h-96 bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+        className={`relative w-full h-[400px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
       />
+      
+      {isScanning && (
+        <p className="text-sm text-gray-500 text-center">
+          Position barcode within the scanning area. If scanning doesn't work, try adjusting lighting or distance.
+        </p>
+      )}
       
       {lastDetectedCode && (
         <Alert>

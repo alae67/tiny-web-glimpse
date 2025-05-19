@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Camera, ScanBarcode, X, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,16 +21,15 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const { toast } = useToast();
 
-  // Initialize scanner
   useEffect(() => {
-    // Create scanner instance if not already created when component mounts
     if (!scannerRef.current) {
-      scannerRef.current = new Html5Qrcode('camera-scanner-container');
+      scannerRef.current = new Html5Qrcode('camera-scanner-container', {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.CODE_128]
+      });
     }
-    
-    // Cleanup function to stop and clear the scanner on unmount
+
     return () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
+      if (scannerRef.current) {
         scannerRef.current.stop().catch(err => {
           console.error('Error stopping scanner:', err);
         });
@@ -40,7 +39,8 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
   const startScanning = async () => {
     try {
-      // Ensure the scanner is initialized
+      await navigator.mediaDevices.getUserMedia({ video: true });
+
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('camera-scanner-container');
       }
@@ -49,44 +49,39 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       setLastDetectedCode(null);
       setScannerError(null);
 
-      console.log("Starting camera scanner with optimized settings...");
-      
-      // Enhanced configuration with better scanning capabilities and larger scan area
+      const cameras = await Html5Qrcode.getCameras();
+      if (!cameras || cameras.length === 0) {
+        throw new Error("No camera found on this device.");
+      }
+
+      const cameraId = cameras[0].id;
+
       await scannerRef.current.start(
-        { facingMode: "environment" }, // Use back camera if available
+        cameraId,
         {
-          fps: 10, // Reduced FPS for more stable scanning
-          qrbox: { width: 350, height: 350 }, // Increased scanning area size (was 250x250)
-          aspectRatio: window.innerWidth > 600 ? 1.0 : undefined, // Adjust based on screen size
-          disableFlip: false, // Allow image flip for better scanning
+          fps: 10,
+          qrbox: { width: 350, height: 350 },
+          aspectRatio: window.innerWidth > 600 ? 1.0 : undefined,
+          disableFlip: false,
         },
         (decodedText) => {
-          // Success callback - code detected
-          console.log('Code detected successfully:', decodedText);
+          console.log("✅ Code detected:", decodedText);
           setLastDetectedCode(decodedText);
-          
-          // Call the parent component's handler
-          onCodeDetected(decodedText);
-          
+          try {
+            onCodeDetected(decodedText);
+          } catch (err) {
+            console.error("Error in onCodeDetected:", err);
+          }
           toast({
             title: "Barcode Detected",
             description: `Detected code: ${decodedText}`,
           });
-          
-          // Auto-close if enabled
-          if (autoClose) {
-            stopScanning();
-          }
+          if (autoClose) stopScanning();
         },
         (errorMessage) => {
-          // This is a normal scanning error and doesn't indicate a problem
-          // We don't need to show these to the user
-          // console.debug('Scanning in progress:', errorMessage);
+          console.log("❌ Scan error:", errorMessage);
         }
-      ).catch(err => {
-        console.error('Error during scanning:', err);
-        setScannerError(`Scanner error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      });
+      );
     } catch (err) {
       console.error('Error starting scanner:', err);
       setScannerError(`Camera error: ${err instanceof Error ? err.message : 'Unable to access camera'}`);
@@ -100,7 +95,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   };
 
   const stopScanning = async () => {
-    if (scannerRef.current && scannerRef.current.isScanning) {
+    if (scannerRef.current) {
       try {
         await scannerRef.current.stop();
         setIsScanning(false);
@@ -114,7 +109,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
     await stopScanning();
     setTimeout(() => {
       startScanning();
-    }, 300); // Short delay before restarting to ensure clean initialization
+    }, 300);
   };
 
   return (

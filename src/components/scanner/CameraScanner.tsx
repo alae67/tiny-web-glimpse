@@ -75,7 +75,19 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
             title: "Barcode Detected",
             description: `Detected code: ${decodedText}`,
           });
-          if (autoClose) stopScanning();
+          if (autoClose) {
+            stopScanning().catch((err) => {
+              // Ignore 'Cannot stop' errors
+              if (
+                (typeof err === 'string' && err.includes('Cannot stop')) ||
+                (err && err.message && err.message.includes('Cannot stop'))
+              ) {
+                setIsScanning(false);
+                return;
+              }
+              console.error('Error stopping scanner:', err);
+            });
+          }
         },
         (errorMessage) => {
           console.log("❌ Scan error:", errorMessage);

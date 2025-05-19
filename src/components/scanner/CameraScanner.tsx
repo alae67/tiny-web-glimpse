@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
@@ -50,12 +51,12 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
       console.log("Starting camera scanner with optimized settings...");
       
-      // Enhanced configuration with better scanning capabilities
+      // Enhanced configuration with better scanning capabilities and larger scan area
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
         {
           fps: 10, // Reduced FPS for more stable scanning
-          qrbox: { width: 250, height: 250 }, // Optimized scanning area size
+          qrbox: { width: 350, height: 350 }, // Increased scanning area size (was 250x250)
           aspectRatio: window.innerWidth > 600 ? 1.0 : undefined, // Adjust based on screen size
           disableFlip: false, // Allow image flip for better scanning
         },
@@ -163,11 +164,11 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       
       <div 
         id="camera-scanner-container" 
-        className={`relative w-full h-[300px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+        className={`relative w-full h-[350px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
       >
         {isScanning && (
           <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-            <div className="border-2 border-blue-500 w-[250px] h-[250px] opacity-70"></div>
+            <div className="border-2 border-blue-500 w-[350px] h-[350px] opacity-70"></div>
           </div>
         )}
       </div>

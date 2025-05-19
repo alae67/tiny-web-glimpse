@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
@@ -59,16 +58,6 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           qrbox: { width: 250, height: 250 }, // Optimized scanning area size
           aspectRatio: window.innerWidth > 600 ? 1.0 : undefined, // Adjust based on screen size
           disableFlip: false, // Allow image flip for better scanning
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.CODE_93,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.QR_CODE
-          ]
         },
         (decodedText) => {
           // Success callback - code detected

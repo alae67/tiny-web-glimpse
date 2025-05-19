@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Camera, ScanBarcode, X, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,13 +23,11 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
   useEffect(() => {
     if (!scannerRef.current) {
-      scannerRef.current = new Html5Qrcode('camera-scanner-container', {
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.CODE_128]
-      });
+      scannerRef.current = new Html5Qrcode('camera-scanner-container');
     }
 
     return () => {
-      if (scannerRef.current) {
+      if (scannerRef.current && isScanning) {
         scannerRef.current.stop().catch(err => {
           console.error('Error stopping scanner:', err);
         });
@@ -59,33 +58,36 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         cameraId,
         {
           fps: 10,
-          qrbox: { width: 350, height: 350 },
+          qrbox: { width: 250, height: 250 },
           aspectRatio: window.innerWidth > 600 ? 1.0 : undefined,
           disableFlip: false,
         },
         (decodedText) => {
           console.log("✅ Code detected:", decodedText);
           setLastDetectedCode(decodedText);
+          
           try {
+            // Call the callback function with the detected code
             onCodeDetected(decodedText);
+            
+            toast({
+              title: "Barcode Detected",
+              description: `Detected code: ${decodedText}`,
+            });
+            
+            // Stop scanning if autoClose is true
+            if (autoClose) {
+              stopScanning().catch((err) => {
+                console.error('Error stopping scanner:', err);
+                setIsScanning(false);
+              });
+            }
           } catch (err) {
             console.error("Error in onCodeDetected:", err);
-          }
-          toast({
-            title: "Barcode Detected",
-            description: `Detected code: ${decodedText}`,
-          });
-          if (autoClose) {
-            stopScanning().catch((err) => {
-              // Ignore 'Cannot stop' errors
-              if (
-                (typeof err === 'string' && err.includes('Cannot stop')) ||
-                (err && err.message && err.message.includes('Cannot stop'))
-              ) {
-                setIsScanning(false);
-                return;
-              }
-              console.error('Error stopping scanner:', err);
+            toast({
+              title: "Error",
+              description: "Error processing the scanned code",
+              variant: "destructive"
             });
           }
         },
@@ -183,7 +185,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       >
         {isScanning && (
           <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-            <div className="border-2 border-blue-500 w-[350px] h-[350px] opacity-70"></div>
+            <div className="border-2 border-blue-500 w-[250px] h-[250px] opacity-70"></div>
           </div>
         )}
       </div>

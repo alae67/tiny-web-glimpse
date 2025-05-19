@@ -258,17 +258,22 @@ const Products: React.FC = () => {
   };
   
   const handleBarcodeDetected = (code: string) => {
+    console.log("Barcode detected in product form:", code);
+    
+    // Update the form data with the scanned barcode
     setFormData(prev => ({
       ...prev,
       barcode: code
     }));
     
+    // Show success toast
     toast({
       title: "Barcode Scanned",
       description: `Barcode ${code} has been added to the product.`,
     });
     
-    setIsScannerOpen(false); // Close scanner after successful scan
+    // Close scanner after successful scan
+    setIsScannerOpen(false);
   };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -396,7 +401,10 @@ const Products: React.FC = () => {
         
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) resetForm();
+          if (!open) {
+            resetForm();
+            setIsScannerOpen(false); // Make sure scanner is closed when dialog is closed
+          }
         }}>
           <DialogTrigger asChild>
             <Button 

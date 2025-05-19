@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
@@ -55,13 +54,10 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
         {
-          fps: 15, // Increased from 10 to 15 for better scanning
-          qrbox: { width: 500, height: 500 }, // Further increased scanning area
+          fps: 15, // Higher FPS for better scanning
+          qrbox: { width: 500, height: 500 }, // Large scanning area
           aspectRatio: 1.0,
           disableFlip: false, // Allow image flip for better scanning
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true // Use native barcode detector if available
-          }
         },
         (decodedText) => {
           // Success callback - code detected

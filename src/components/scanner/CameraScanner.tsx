@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Camera, ScanBarcode, X, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -48,21 +49,33 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       setLastDetectedCode(null);
       setScannerError(null);
 
-      console.log("Starting camera scanner...");
+      console.log("Starting camera scanner with optimized settings...");
       
       // Enhanced configuration with better scanning capabilities
       await scannerRef.current.start(
         { facingMode: "environment" }, // Use back camera if available
         {
-          fps: 15, // Higher FPS for better scanning
-          qrbox: { width: 500, height: 500 }, // Large scanning area
-          aspectRatio: 1.0,
+          fps: 10, // Reduced FPS for more stable scanning
+          qrbox: { width: 250, height: 250 }, // Optimized scanning area size
+          aspectRatio: window.innerWidth > 600 ? 1.0 : undefined, // Adjust based on screen size
           disableFlip: false, // Allow image flip for better scanning
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.CODE_93,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.QR_CODE
+          ]
         },
         (decodedText) => {
           // Success callback - code detected
-          console.log('Code detected:', decodedText);
+          console.log('Code detected successfully:', decodedText);
           setLastDetectedCode(decodedText);
+          
+          // Call the parent component's handler
           onCodeDetected(decodedText);
           
           toast({
@@ -76,10 +89,14 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
           }
         },
         (errorMessage) => {
-          // Only log scanning errors, don't show to user as these are normal during scanning
-          console.log('Scanning status:', errorMessage);
+          // This is a normal scanning error and doesn't indicate a problem
+          // We don't need to show these to the user
+          // console.debug('Scanning in progress:', errorMessage);
         }
-      );
+      ).catch(err => {
+        console.error('Error during scanning:', err);
+        setScannerError(`Scanner error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      });
     } catch (err) {
       console.error('Error starting scanner:', err);
       setScannerError(`Camera error: ${err instanceof Error ? err.message : 'Unable to access camera'}`);
@@ -157,13 +174,25 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       
       <div 
         id="camera-scanner-container" 
-        className={`relative w-full h-[400px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
-      />
+        className={`relative w-full h-[300px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+      >
+        {isScanning && (
+          <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+            <div className="border-2 border-blue-500 w-[250px] h-[250px] opacity-70"></div>
+          </div>
+        )}
+      </div>
       
       {isScanning && (
-        <p className="text-sm text-gray-500 text-center">
-          Position barcode within the scanning area. If scanning doesn't work, try adjusting lighting or distance.
-        </p>
+        <div className="text-sm text-gray-500 space-y-2">
+          <p className="text-center font-medium">Scanning Tips:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Ensure barcode is well-lit and not blurry</li>
+            <li>Position barcode within the blue box</li>
+            <li>Keep your device steady</li>
+            <li>Try different distances (4-8 inches works best)</li>
+          </ul>
+        </div>
       )}
       
       {lastDetectedCode && (

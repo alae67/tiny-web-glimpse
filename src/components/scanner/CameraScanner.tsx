@@ -19,18 +19,20 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const [lastDetectedCode, setLastDetectedCode] = useState<string | null>(null);
   const [scannerError, setScannerError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerContainerRef = useRef<HTMLDivElement | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!scannerRef.current) {
-      scannerRef.current = new Html5Qrcode('camera-scanner-container');
-    }
-
+    // Only initialize scanner when needed, not on component mount
     return () => {
       if (scannerRef.current && isScanning) {
-        scannerRef.current.stop().catch(err => {
-          console.error('Error stopping scanner:', err);
-        });
+        try {
+          scannerRef.current.stop().catch(err => {
+            console.error('Error stopping scanner on unmount:', err);
+          });
+        } catch (err) {
+          console.error('Error during cleanup:', err);
+        }
       }
     };
   }, []);
@@ -110,28 +112,49 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const stopScanning = async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.stop();
-        setIsScanning(false);
+        // Check if scanner is actually running before attempting to stop
+        if (isScanning) {
+          await scannerRef.current.stop();
+          console.log("Scanner stopped successfully");
+        }
       } catch (err: any) {
-        // Ignore error if scanner is not running
+        // Ignore specific errors related to scanner not running
         if (typeof err === 'string' && err.includes('Cannot stop')) {
-          setIsScanning(false);
-          return;
+          console.log("Scanner was not running, no need to stop");
+        } else if (err && err.message && err.message.includes('Cannot stop')) {
+          console.log("Scanner was not running, no need to stop");
+        } else {
+          console.error('Error stopping scanner:', err);
         }
-        if (err && err.message && err.message.includes('Cannot stop')) {
-          setIsScanning(false);
-          return;
-        }
-        console.error('Error stopping scanner:', err);
+      } finally {
+        // Always update state regardless of outcome
+        setIsScanning(false);
       }
     }
   };
 
   const restartScanner = async () => {
-    await stopScanning();
-    setTimeout(() => {
-      startScanning();
-    }, 300);
+    try {
+      // First make sure scanner is stopped
+      if (scannerRef.current && isScanning) {
+        await scannerRef.current.stop();
+      }
+      
+      // Wait a short delay to ensure camera resources are released
+      setTimeout(() => {
+        setIsScanning(false);
+        startScanning();
+      }, 500);
+    } catch (err) {
+      console.error('Error restarting scanner:', err);
+      setIsScanning(false);
+      setScannerError('Error restarting camera. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to restart camera scanner",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -181,6 +204,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       
       <div 
         id="camera-scanner-container" 
+        ref={scannerContainerRef}
         className={`relative w-full h-[350px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
       >
         {isScanning && (

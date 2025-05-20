@@ -262,7 +262,7 @@ const Orders: React.FC = () => {
 
   // Modified method to handle scanned products
   const handleScannedCode = async (code: string) => {
-    console.log("Scanned code:", code);
+    console.log("Scanned code in Orders:", code);
     
     // Try to find product with matching id or barcode property
     let product = availableProducts.find(
@@ -526,6 +526,10 @@ const Orders: React.FC = () => {
           setIsDialogOpen(open);
           // Enable scanner when dialog is opened
           setIsScannerEnabled(open);
+          // Make sure camera scanner is reset when dialog is closed
+          if (!open) {
+            setActiveTab("manual");
+          }
         }}>
           <DialogTrigger asChild>
             <Button className="bg-blue-600 hover:bg-blue-700">

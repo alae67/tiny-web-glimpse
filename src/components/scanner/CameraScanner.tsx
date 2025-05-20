@@ -58,7 +58,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         cameraId,
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: 300, height: 300 }, // Increased scanning box size
           aspectRatio: window.innerWidth > 600 ? 1.0 : undefined,
           disableFlip: false,
         },
@@ -185,7 +185,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       >
         {isScanning && (
           <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-            <div className="border-2 border-blue-500 w-[250px] h-[250px] opacity-70"></div>
+            <div className="border-2 border-blue-500 w-[300px] h-[300px] opacity-70"></div>
           </div>
         )}
       </div>

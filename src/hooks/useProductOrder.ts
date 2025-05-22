@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { getAllProducts, saveOrder, saveProduct } from "@/utils/fileStorage";
@@ -133,6 +134,49 @@ export const useProductOrder = () => {
     }
   };
 
+  // This is the function that handles selling products
+  const handleSellProduct = async (scannedCode: string) => {
+    console.log("Selling product with code:", scannedCode);
+    
+    // First, validate if this is a valid product
+    const product = availableProducts.find(
+      (p) => p.id === scannedCode || p.barcode === scannedCode
+    );
+    
+    if (product) {
+      // Check if product is out of stock
+      if (product.stock !== undefined && product.stock <= 0) {
+        toast({
+          title: "Out of Stock",
+          description: `${product.name} is currently out of stock.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Process the sale - we'll implement the actual selling logic here
+      // For now, just update stock and show success message
+      await updateProductStock(product.id);
+      
+      toast({
+        title: "Sale Complete",
+        description: `Successfully sold ${product.name}`,
+      });
+      
+      // You might want to record this sale in a sales history
+      setLastOrderedProduct(product); // Reusing this state for last sold product
+      setOrderCount(prev => prev + 1);
+    } else {
+      // Product doesn't exist - show error message
+      toast({
+        title: "Invalid Product",
+        description: `No product found with code: ${scannedCode}`,
+        variant: "destructive"
+      });
+      console.error(`Product not found during sale attempt: ${scannedCode}`);
+    }
+  };
+
   const handleCreateOrder = async (scannedCode: string) => {
     console.log("Creating order for product code:", scannedCode);
     
@@ -184,6 +228,7 @@ export const useProductOrder = () => {
     scannedBarcodes,
     currencySymbol,
     handleCreateOrder,
+    handleSellProduct, // Expose the new selling function
     clearScannedBarcodes
   };
 };

@@ -276,40 +276,14 @@ const Orders: React.FC = () => {
         description: `${product.name} was added to the order`,
       });
     } else {
-      // If product not found, create a new one
-      const newProduct = {
-        id: `product-${Date.now()}`,
-        name: `Product ${code}`,
-        barcode: code,
-        price: 0,
-        stock: 10,
-        winEligible: false,
-        category: "Scanned Products",
-        quantity: 1
-      };
-      
-      try {
-        // Save to database
-        await saveProduct(newProduct);
-        
-        toast({
-          title: "New Product Created",
-          description: `Created and added product with barcode: ${code}`,
-        });
-        
-        // Add to selected products
-        setSelectedProducts(prev => [...prev, newProduct]);
-        
-        // Refresh available products
-        await loadAvailableProducts();
-      } catch (error) {
-        console.error("Error creating new product:", error);
-        toast({
-          title: "Error",
-          description: "Failed to create new product",
-          variant: "destructive",
-        });
-      }
+      // Product doesn't exist - show error message
+      toast({
+        title: "Invalid Product",
+        description: `No product found with code: ${code}`,
+        variant: "destructive"
+      });
+      console.error(`Product not found in order creation: ${code}`);
+      // We don't automatically create products anymore
     }
   };
 
@@ -361,9 +335,7 @@ const Orders: React.FC = () => {
       // Update quantity if already selected
       setSelectedProducts(
         selectedProducts.map(p =>
-          p.id === product.id 
-            ? { ...p, quantity: p.quantity + 1 } 
-            : p
+          p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
         )
       );
     } else {

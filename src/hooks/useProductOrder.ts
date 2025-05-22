@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { getAllProducts, saveOrder, saveProduct } from "@/utils/fileStorage";
@@ -157,46 +156,21 @@ export const useProductOrder = () => {
         });
         return;
       }
-    } else {
-      // If product doesn't exist, create a new one with default values
-      const newProduct: Product = {
-        id: `product-${Date.now()}`,
-        barcode: scannedCode,
-        name: `Product ${scannedCode}`,
-        price: 0,
-        stock: 10,
-        winEligible: false,
-        category: "Scanned Products",
-      };
       
-      // Save the new product to database
-      try {
-        await saveProduct(newProduct);
-        toast({
-          title: "New Product Created",
-          description: `Created product with barcode: ${scannedCode}`,
-        });
-        
-        // Set product to the newly created product
-        product = newProduct;
-        
-        // Refresh available products
-        await loadAvailableProducts();
-      } catch (error) {
-        console.error("Error saving new product:", error);
-        toast({
-          title: "Error",
-          description: "Failed to create new product",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Create new order with the product
+      await createNewOrder(product);
+      setLastOrderedProduct(product);
+      setOrderCount(prev => prev + 1);
+    } else {
+      // Product doesn't exist - show error instead of creating a new one
+      toast({
+        title: "Invalid Product",
+        description: `No product found with code: ${scannedCode}`,
+        variant: "destructive"
+      });
+      console.error(`Product not found: ${scannedCode}`);
+      // We don't create a new product automatically anymore
     }
-    
-    // Create new order with the product
-    await createNewOrder(product);
-    setLastOrderedProduct(product);
-    setOrderCount(prev => prev + 1);
   };
 
   const clearScannedBarcodes = () => {

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
@@ -112,23 +111,10 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const stopScanning = async () => {
     if (scannerRef.current) {
       try {
-        // Check if scanner is actually running before attempting to stop
-        if (isScanning) {
-          await scannerRef.current.stop();
-          console.log("Scanner stopped successfully");
-        }
-      } catch (err: any) {
-        // Ignore specific errors related to scanner not running
-        if (typeof err === 'string' && err.includes('Cannot stop')) {
-          console.log("Scanner was not running, no need to stop");
-        } else if (err && err.message && err.message.includes('Cannot stop')) {
-          console.log("Scanner was not running, no need to stop");
-        } else {
-          console.error('Error stopping scanner:', err);
-        }
-      } finally {
-        // Always update state regardless of outcome
+        await scannerRef.current.stop();
         setIsScanning(false);
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
       }
     }
   };

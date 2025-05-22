@@ -47,4 +47,4 @@ export const ScannerCard: React.FC<ScannerCardProps> = ({
       </CardContent>
     </Card>
   );
-};
+}

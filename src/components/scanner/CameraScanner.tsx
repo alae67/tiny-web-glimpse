@@ -60,7 +60,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         cameraId,
         {
           fps: 10,
-          qrbox: { width: 400, height: 400 }, // INCREASED scanning box size from 300 to 400
+          qrbox: { width: 450, height: 450 }, // INCREASED scanning box size from 400 to 450
           aspectRatio: window.innerWidth > 600 ? 1.0 : undefined,
           disableFlip: false,
         },
@@ -205,11 +205,11 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       <div 
         id="camera-scanner-container" 
         ref={scannerContainerRef}
-        className={`relative w-full h-[400px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
+        className={`relative w-full h-[500px] bg-gray-100 rounded-md overflow-hidden ${!isScanning ? 'hidden' : ''}`}
       >
         {isScanning && (
           <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-            <div className="border-2 border-blue-500 w-[400px] h-[400px] opacity-70"></div>
+            <div className="border-2 border-blue-500 w-[450px] h-[450px] opacity-70"></div>
           </div>
         )}
       </div>
@@ -222,6 +222,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
             <li>Position barcode within the blue box</li>
             <li>Keep your device steady</li>
             <li>Try different distances (4-10 inches works best)</li>
+            <li>If scanning large products, make sure barcode is fully visible</li>
           </ul>
         </div>
       )}

@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
         />
         <NavItem
           to="/dashboard/products"
-          icon={<Package className="h-5 w-5" />}
+          icon={<Package className="h-5 w-5 bg-blue-600 hover:bg-blue-700" />}
           label={t("dashboard.products")}
           isActive={isActive("/dashboard/products")}
           onClick={handleNavClick}

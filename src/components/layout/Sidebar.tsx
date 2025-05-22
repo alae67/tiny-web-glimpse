@@ -29,7 +29,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isActive, onClick })
         cn(
           "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
           isActive
-            ? "bg-store-DEFAULT text-white"
+            ? "bg-store-DEFAULT text-gray-500"
             : "text-gray-500 hover:text-store-DEFAULT hover:bg-gray-100"
         )
       }
@@ -73,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
         {isAdmin && (
           <NavItem
             to="/dashboard"
-            icon={<LayoutDashboard className="h-5 w-5 bg-blue-600 hover:bg-blue-700" />}
+            icon={<LayoutDashboard className="h-5 w-5 bg-blue-6002" />}
             label={t("dashboard.overview")}
             isActive={isActive("/dashboard")}
             onClick={handleNavClick}

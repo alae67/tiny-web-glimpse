@@ -73,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, onCloseMobile }) =>
         {isAdmin && (
           <NavItem
             to="/dashboard"
-            icon={<LayoutDashboard className="h-5 w-5" />}
+            icon={<LayoutDashboard className="h-5 w-5 bg-blue-600 hover:bg-blue-700" />}
             label={t("dashboard.overview")}
             isActive={isActive("/dashboard")}
             onClick={handleNavClick}

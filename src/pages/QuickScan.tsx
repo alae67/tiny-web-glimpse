@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getAllProducts, saveOrder, saveProduct } from "@/utils/fileStorage";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScannerCard } from "@/components/quickscan/ScannerCard";
 
 // Updated Product interface to match with fileStorage.ts
 interface Product {
@@ -228,6 +229,39 @@ const QuickScan: React.FC = () => {
     }
   };
 
+  const handleSellProduct = async (scannedCode: string) => {
+    // Try to find product by barcode or id
+    const product = availableProducts.find(
+      (p) => p.id === scannedCode || p.barcode === scannedCode
+    );
+    if (product) {
+      // Check if product is out of stock
+      if (product.stock !== undefined && product.stock <= 0) {
+        toast({
+          title: "Out of Stock",
+          description: `${product.name} is currently out of stock.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      // Simulate a sale (update stock, show success)
+      await updateProductStock(product.id);
+      toast({
+        title: "Sale Complete",
+        description: `Successfully sold ${product.name}`,
+      });
+      setLastOrderedProduct(product);
+      setOrderCount((prev) => prev + 1);
+    } else {
+      toast({
+        title: "Product not found",
+        description: `No product found with code: ${scannedCode}`,
+        variant: "destructive"
+      });
+      console.error(`Product not found during sale attempt: ${scannedCode}`);
+    }
+  };
+
   const clearScannedBarcodes = () => {
     setScannedBarcodes([]);
     localStorage.removeItem("scannedBarcodes");
@@ -265,36 +299,13 @@ const QuickScan: React.FC = () => {
         </TabsList>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                {activeTab === "usb-scanner" ? (
-                  <><ScanBarcode className="h-5 w-5" /><span>Barcode Scanner</span></>
-                ) : (
-                  <><Camera className="h-5 w-5" /><span>Camera Scanner</span></>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Scan any product barcode to instantly create a new order
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TabsContent value="usb-scanner">
-                <BarcodeScanner 
-                  onProductScanned={() => {}} 
-                  enabled={isScanning && activeTab === "usb-scanner"}
-                  createOrderMode={true}
-                  onCreateOrder={handleCreateOrder}
-                />
-              </TabsContent>
-              <TabsContent value="camera-scanner">
-                <CameraScanner 
-                  onCodeDetected={handleCreateOrder}
-                  autoClose={false}
-                />
-              </TabsContent>
-            </CardContent>
-          </Card>
+          <ScannerCard
+            activeTab={activeTab}
+            isScanning={isScanning}
+            handleCreateOrder={handleCreateOrder}
+            handleSellProduct={handleSellProduct}
+            mode="sell" // Set to "sell" to enable strict validation
+          />
 
           <Card>
             <CardHeader>

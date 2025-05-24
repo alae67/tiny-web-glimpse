@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,18 +9,7 @@ import { Camera } from "lucide-react";
 import { CameraScanner } from "@/components/scanner/CameraScanner";
 import { ProductSelection } from "./ProductSelection";
 import { SelectedProductsTable } from "./SelectedProductsTable";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  winEligible: boolean;
-  imageUrl?: string;
-  category?: string;
-  barcode?: string;
-  stock?: number;
-}
+import { Product } from "@/hooks/product/types";
 
 interface AddOrderDialogProps {
   isOpen: boolean;
@@ -72,7 +60,7 @@ export const AddOrderDialog: React.FC<AddOrderDialogProps> = ({
       setSelectedProducts(
         selectedProducts.map(p =>
           p.id === productId 
-            ? { ...p, quantity: p.quantity + 1 } 
+            ? { ...p, quantity: (p.quantity || 1) + 1 } 
             : p
         )
       );
@@ -90,7 +78,7 @@ export const AddOrderDialog: React.FC<AddOrderDialogProps> = ({
     if (existingProduct) {
       setSelectedProducts(
         selectedProducts.map(p =>
-          p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
+          p.id === product.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
         )
       );
     } else {
@@ -116,7 +104,11 @@ export const AddOrderDialog: React.FC<AddOrderDialogProps> = ({
 
   const calculateTotal = () => {
     return selectedProducts.reduce(
-      (total, product) => total + product.price * product.quantity, 
+      (total, product) => {
+        const productPrice = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+        const quantity = product.quantity || 1;
+        return total + (productPrice * quantity);
+      }, 
       0
     );
   };
@@ -226,3 +218,5 @@ export const AddOrderDialog: React.FC<AddOrderDialogProps> = ({
     </Dialog>
   );
 };
+
+export default AddOrderDialog;

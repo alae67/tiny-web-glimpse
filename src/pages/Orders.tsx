@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { getAllProducts } from "@/utils/fileStorage";
@@ -93,9 +92,10 @@ const Orders: React.FC = () => {
         quantity: 1,
         winEligible: product.winEligible !== undefined ? product.winEligible : false,
         imageUrl: product.imageUrl,
-        category: product.category,
+        category: product.category || "Uncategorized",
         barcode: product.barcode,
-        stock: product.stock || 10
+        stock: product.stock || 10,
+        userId: product.userId
       }));
       
       setAvailableProducts(productOptions);
@@ -210,7 +210,11 @@ const Orders: React.FC = () => {
     }
 
     const total = selectedProducts.reduce(
-      (total, product) => total + product.price * product.quantity, 
+      (total, product) => {
+        const productPrice = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+        const quantity = product.quantity || 1;
+        return total + (productPrice * quantity);
+      }, 
       0
     );
     const hasWinEligible = selectedProducts.some(product => product.winEligible);
@@ -236,7 +240,7 @@ const Orders: React.FC = () => {
     localStorage.setItem("orders", JSON.stringify(updatedOrders));
 
     selectedProducts.forEach(product => {
-      updateProductStock(product.id, product.quantity);
+      updateProductStock(product.id, product.quantity || 1);
     });
 
     toast({
